@@ -1,154 +1,123 @@
 import React, { useState } from 'react';
-import GlassSurface from './GlassSurface';
-import MapCardExpanded from './MapCardExpanded';
-import { useSquad } from '../context/SquadContext';
-import { MapPin, Trophy, Swords, Crown, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import GlassSurface, { SPRINGS } from './GlassSurface';
+import MapCardExpanded from './MapCardExpanded';
+import { ChevronDown, Trophy, Shield, Swords } from 'lucide-react';
+import { useSquad } from '../context/SquadContext';
 
 export default function MapCard({ mapData }) {
-  const { setSelectedPlayerForDrawer } = useSquad();
   const [isExpanded, setIsExpanded] = useState(false);
+  const { players: squadPlayers, setSelectedPlayerForDrawer } = useSquad();
+  const { displayName, splashImage, gamesPlayed, wins, losses, winRate, squadAvgACS, topPerformer } = mapData;
 
-  const {
-    map,
-    splash,
-    gamesPlayed,
-    wins,
-    losses,
-    winRate,
-    squadAvgACS,
-    squadAvgKD,
-    topPerformer,
-  } = mapData;
+  // Color coding win rate
+  const winRateColorClass =
+    winRate >= 60
+      ? 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10'
+      : winRate >= 40
+      ? 'text-amber-400 border-amber-500/40 bg-amber-500/10'
+      : 'text-red-400 border-red-500/40 bg-red-500/10';
 
-  const winRateColor =
-    winRate >= 60 ? 'text-emerald-400' : winRate >= 45 ? 'text-amber-400' : 'text-red-400';
+  const winPercentage = gamesPlayed > 0 ? (wins / gamesPlayed) * 100 : 0;
+
+  const handleTopPerformerClick = (e) => {
+    e.stopPropagation();
+    if (!topPerformer) return;
+    const matchingSquadPlayer = squadPlayers.find(
+      (sp) =>
+        (topPerformer.puuid && sp.puuid && sp.puuid.toLowerCase() === topPerformer.puuid.toLowerCase()) ||
+        sp.name.toLowerCase() === topPerformer.name.toLowerCase()
+    );
+    setSelectedPlayerForDrawer(matchingSquadPlayer || topPerformer);
+  };
 
   return (
-    <GlassSurface
-      level="2"
-      hoverable
-      useDistortion
-      className="p-0 overflow-hidden group flex flex-col justify-between"
-    >
-      {/* Top Banner with Map Splash Art */}
-      <div className="relative h-28 sm:h-36 w-full overflow-hidden">
-        {splash ? (
-          <img
-            src={splash}
-            alt={map}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 flex items-center justify-center font-teko text-2xl text-white">
-            {map}
+    <motion.div layout transition={SPRINGS.card} className="h-full">
+      <GlassSurface
+        level={isExpanded ? '2' : '1'}
+        interactive
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="h-full p-4 sm:p-5 flex flex-col justify-between overflow-hidden cursor-pointer relative group border border-white/20"
+      >
+        {/* Background Splash Art with Dark Gradient Overlay */}
+        {splashImage && (
+          <div className="absolute inset-0 z-0 overflow-hidden rounded-[28px] opacity-25 group-hover:opacity-35 transition-opacity">
+            <img src={splashImage} alt={displayName} className="w-full h-full object-cover" loading="lazy" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0b0f] via-[#0a0b0f]/80 to-transparent" />
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0b0f] via-black/40 to-transparent" />
-
-        {/* Map Header Title */}
-        <div className="absolute bottom-2.5 left-3 right-3 flex items-end justify-between z-10">
-          <div>
-            <div className="flex items-center gap-1 text-[10px] font-mono text-cyan-300 font-bold uppercase tracking-widest">
-              <MapPin className="w-3 h-3 text-cyan-400" />
-              <span>AP Server</span>
-            </div>
-            <h3 className="font-teko-title text-2xl sm:text-3xl text-white font-bold leading-none tracking-wider text-glass-shadow">
-              {map}
-            </h3>
-          </div>
-
-          <div className="text-right">
-            <span className="text-xs font-mono text-gray-300">GAMES</span>
-            <div className="font-teko text-2xl sm:text-3xl text-white font-bold leading-none">
-              {gamesPlayed}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Card Stats Grid */}
-      <div className="p-3.5 sm:p-4 space-y-3">
-        <div className="grid grid-cols-3 gap-2 text-center font-mono py-1 border-y border-white/10">
-          <div>
-            <span className="text-[9px] text-gray-400 block uppercase">Win Rate</span>
-            <span className={`font-teko text-xl sm:text-2xl font-bold ${winRateColor}`}>
-              {winRate}%
-            </span>
-          </div>
-
-          <div>
-            <span className="text-[9px] text-gray-400 block uppercase">Squad ACS</span>
-            <span className="font-teko text-xl sm:text-2xl font-bold text-amber-400">
-              {squadAvgACS}
-            </span>
-          </div>
-
-          <div>
-            <span className="text-[9px] text-gray-400 block uppercase">Record</span>
-            <span className="font-teko text-xl sm:text-2xl font-bold text-white">
-              {wins}W - {losses}L
-            </span>
-          </div>
-        </div>
-
-        {/* MVP Top Performer Badge */}
-        {topPerformer ? (
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedPlayerForDrawer(topPerformer);
-            }}
-            className="bg-black/50 hover:bg-[#ff4655]/20 border border-white/15 hover:border-[#ff4655]/50 rounded-xl p-2 flex items-center justify-between cursor-pointer transition-all group/mvp active:scale-98"
-          >
-            <div className="flex items-center gap-2 truncate">
-              <Crown className="w-4 h-4 text-amber-400 shrink-0" />
-              <div className="truncate">
-                <div className="text-[9px] font-mono text-gray-400">MAP MVP</div>
-                <div className="font-oswald-header text-xs text-white font-bold group-hover/mvp:text-[#ff4655] transition-colors truncate">
-                  {topPerformer.name}
-                  <span className="text-gray-400 font-mono text-[10px] ml-1">#{topPerformer.tag}</span>
-                </div>
+        {/* Content Container */}
+        <div className="relative z-10 space-y-4">
+          
+          {/* Card Header: Map Name & Win Rate Badge */}
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h3 className="font-teko-title text-3xl sm:text-4xl text-white font-bold tracking-wider leading-none text-glass-shadow">
+                {displayName}
+              </h3>
+              <div className="text-xs font-mono text-gray-300 mt-0.5 flex items-center gap-1.5">
+                <span>{gamesPlayed} {gamesPlayed === 1 ? 'Game' : 'Games'} Logged</span>
+                <span>•</span>
+                <span className="text-amber-300 font-bold">{squadAvgACS} ACS</span>
               </div>
             </div>
 
-            <div className="text-right font-mono text-[10px] shrink-0">
-              <div className="text-amber-400 font-bold">{topPerformer.avgACS} ACS</div>
-              <div className="text-cyan-300">{topPerformer.avgKD} K/D</div>
+            {/* Win Rate Pill */}
+            <div className={`px-3 py-1 rounded-full border font-mono text-xs font-bold ${winRateColorClass}`}>
+              {winRate}% WR
             </div>
           </div>
-        ) : (
-          <div className="text-[10px] font-mono text-gray-400 text-center py-1">
-            No MVP logged.
+
+          {/* Win / Loss Segmented Bar */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[11px] font-mono text-gray-300">
+              <span className="text-emerald-400 font-bold">{wins} Wins</span>
+              <span className="text-red-400 font-bold">{losses} Losses</span>
+            </div>
+            <div className="h-2 w-full rounded-full bg-black/60 overflow-hidden flex p-0.5 border border-white/10">
+              <div className="h-full bg-emerald-400 rounded-full transition-all" style={{ width: `${winPercentage}%` }} />
+              <div className="h-full bg-red-500 rounded-full transition-all" style={{ width: `${100 - winPercentage}%` }} />
+            </div>
           </div>
-        )}
 
-        {/* Expand Breakdown Button (44px touch target) */}
-        <button
-          type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/15 text-xs font-mono text-gray-200 hover:text-white transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 min-h-[44px]"
-        >
-          <span>{isExpanded ? 'Hide Squad Breakdown' : 'Expand Squad Breakdown'}</span>
-          <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
-        </button>
-
-        {/* Expanded Breakdown */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-              className="overflow-hidden pt-2"
+          {/* MVP Top Performer Highlight */}
+          {topPerformer && (
+            <div
+              onClick={handleTopPerformerClick}
+              className="p-2.5 rounded-xl bg-white/10 border border-white/20 hover:border-cyan-400/50 hover:bg-white/20 flex items-center justify-between transition-all cursor-pointer group/mvp"
             >
-              <MapCardExpanded mapData={mapData} />
-            </motion.div>
+              <div className="flex items-center gap-2 truncate">
+                <div className="w-6 h-6 rounded-md bg-black/60 p-0.5 shrink-0 flex items-center justify-center">
+                  {topPerformer.topAgentIcon ? (
+                    <img src={topPerformer.topAgentIcon} alt={topPerformer.topAgent} className="w-full h-full object-contain" />
+                  ) : (
+                    <Shield className="w-3.5 h-3.5 text-cyan-400" />
+                  )}
+                </div>
+                <div className="text-xs font-mono text-white truncate">
+                  Top MVP: <strong className="text-amber-400 group-hover/mvp:underline">{topPerformer.name}</strong>
+                </div>
+              </div>
+              <span className="text-xs font-mono font-bold text-emerald-400">{topPerformer.avgACS} ACS</span>
+            </div>
           )}
-        </AnimatePresence>
-      </div>
-    </GlassSurface>
+
+          {/* Accordion Expandable Section */}
+          <AnimatePresence>
+            {isExpanded && <MapCardExpanded mapData={mapData} />}
+          </AnimatePresence>
+
+        </div>
+
+        {/* Expand Accordion Toggle Bar */}
+        <div className="relative z-10 pt-3 flex items-center justify-center text-xs font-mono text-gray-300 hover:text-white">
+          <span className="mr-1">{isExpanded ? 'Collapse Stats' : 'Expand Player Breakdown'}</span>
+          <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronDown className="w-4 h-4 text-cyan-400" />
+          </motion.div>
+        </div>
+      </GlassSurface>
+    </motion.div>
   );
 }

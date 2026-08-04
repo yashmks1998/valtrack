@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield } from 'lucide-react';
+import { Shield, Swords, Crosshair } from 'lucide-react';
 
 export default function MatchScoreboard({ match }) {
   if (!match || !match.players || !match.players.all_players) return null;
@@ -27,16 +27,15 @@ export default function MatchScoreboard({ match }) {
         <div>Score: {roundsWon} - {roundsLost}</div>
       </div>
 
-      {/* Responsive Horizontal Scroll Table Container with Visual Hints */}
-      <div className="overflow-x-auto no-scrollbar border border-white/10 rounded-xl bg-black/40">
-        <table className="w-full text-left text-xs font-mono border-collapse min-w-[500px]">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-xs font-mono border-collapse">
           <thead>
-            <tr className="border-b border-white/10 text-gray-400 text-[10px] uppercase bg-black/60">
-              <th className="py-2 px-3 sticky left-0 bg-[#0a0b0f] z-10 min-w-[140px]">Player</th>
-              <th className="py-2 px-3 text-right">ACS</th>
-              <th className="py-2 px-3 text-right">K / D / A</th>
-              <th className="py-2 px-3 text-right">KD</th>
-              <th className="py-2 px-3 text-right">HS%</th>
+            <tr className="border-b border-white/10 text-gray-400 text-[10px] uppercase">
+              <th className="py-1.5 px-2">Player</th>
+              <th className="py-1.5 px-2 text-right">ACS</th>
+              <th className="py-1.5 px-2 text-right">K / D / A</th>
+              <th className="py-1.5 px-2 text-right">KD</th>
+              <th className="py-1.5 px-2 text-right">HS%</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
@@ -48,7 +47,7 @@ export default function MatchScoreboard({ match }) {
 
               return (
                 <tr key={p.puuid || p.name || idx} className="hover:bg-white/5 transition-colors">
-                  <td className="py-2 px-3 flex items-center gap-2 sticky left-0 bg-[#0a0b0f] z-10">
+                  <td className="py-2 px-2 flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-black/60 border border-white/20 overflow-hidden shrink-0">
                       {p.assets?.agent?.small ? (
                         <img src={p.assets.agent.small} alt={p.character} className="w-full h-full object-contain" />
@@ -56,15 +55,15 @@ export default function MatchScoreboard({ match }) {
                         <div className="w-full h-full flex items-center justify-center text-[10px] text-white">?</div>
                       )}
                     </div>
-                    <div className="truncate max-w-[100px]">
-                      <span className="font-bold text-white truncate block">{p.name}</span>
-                      <span className="text-[10px] text-gray-400 font-normal">#{p.tag}</span>
+                    <div className="truncate">
+                      <span className="font-bold text-white">{p.name}</span>
+                      <span className="text-[10px] text-gray-400 font-normal ml-1">#{p.tag}</span>
                     </div>
                   </td>
-                  <td className="py-2 px-3 text-right font-bold text-amber-400">{stats.score || 0}</td>
-                  <td className="py-2 px-3 text-right text-gray-200">{stats.kills || 0} / {stats.deaths || 0} / {stats.assists || 0}</td>
-                  <td className="py-2 px-3 text-right text-cyan-300">{kdRatio}</td>
-                  <td className="py-2 px-3 text-right text-[#ff4655]">{hsPercent}%</td>
+                  <td className="py-2 px-2 text-right font-bold text-amber-400">{stats.score || 0}</td>
+                  <td className="py-2 px-2 text-right text-gray-200">{stats.kills || 0} / {stats.deaths || 0} / {stats.assists || 0}</td>
+                  <td className="py-2 px-2 text-right text-cyan-300">{kdRatio}</td>
+                  <td className="py-2 px-2 text-right text-[#ff4655]">{hsPercent}%</td>
                 </tr>
               );
             })}
