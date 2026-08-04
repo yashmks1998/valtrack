@@ -114,10 +114,23 @@ export function SquadProvider({ children }) {
         fetchMatches(effectiveRegion, name, tag).catch(() => []),
       ]);
 
+      // Normalise rank into the consistent shape the UI components expect:
+      //   ProfileHeader reads: rank.currentTierName, rank.rankImage, rank.rankingInTier, rank.elo
+      //   fetchRank returns:   current_tier_patched, images.small, ranking_in_tier, elo
+      let normalisedRank = null;
+      if (rank) {
+        normalisedRank = {
+          currentTierName: rank.current_tier_patched || rank.currentTierName || 'Unranked',
+          rankImage: rank.images?.small || rank.rankImage || null,
+          rankingInTier: rank.ranking_in_tier ?? rank.rankingInTier ?? 0,
+          elo: rank.elo ?? 0,
+        };
+      }
+
       const newPlayer = {
         ...account,
         region: effectiveRegion,
-        rank: rank || account.rank,
+        rank: normalisedRank,
       };
 
       setPlayers((prev) => [...prev, newPlayer]);

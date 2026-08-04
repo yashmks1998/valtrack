@@ -14,6 +14,29 @@ export function normalizeMapName(rawMapName) {
 }
 
 /**
+ * Extract season ID from a match's metadata.
+ * Henrik v3 can return:
+ *   - metadata.season_id: "uuid-string"
+ *   - metadata.season: { id: "uuid-string", short: "e9a3" }
+ *   - metadata.season: "uuid-string"  (older responses)
+ */
+export function extractSeasonId(metadata) {
+  if (!metadata) return '';
+  if (metadata.season_id && typeof metadata.season_id === 'string') {
+    return metadata.season_id.toLowerCase();
+  }
+  if (metadata.season) {
+    if (typeof metadata.season === 'object' && metadata.season.id) {
+      return metadata.season.id.toLowerCase();
+    }
+    if (typeof metadata.season === 'string') {
+      return metadata.season.toLowerCase();
+    }
+  }
+  return '';
+}
+
+/**
  * Filter matches to find games where 2+ squad members played on the same team.
  * Supports filterOptions as object { season, mode, outcome, player } OR string selectedSeason.
  */
@@ -42,7 +65,7 @@ export function findSharedMatches(players, allMatches, filterOptions = {}) {
   if (season && season !== 'all') {
     const seasonLower = season.toLowerCase();
     matchesPool = matchesPool.filter((m) => {
-      const mSeasonId = (m.metadata?.season_id || m.metadata?.season || '').toLowerCase();
+      const mSeasonId = extractSeasonId(m.metadata);
       if (!mSeasonId) return true;
       return mSeasonId.includes(seasonLower) || seasonLower.includes(mSeasonId);
     });
@@ -112,10 +135,10 @@ export function findSharedMatches(players, allMatches, filterOptions = {}) {
           match,
           matchId,
           mapName,
-          gameStart: match.metadata.game_start_patched || 'Recent',
+          gameStart: match.metadata.game_start_patched || match.metadata.game_start || 'Recent',
           mode: match.metadata.mode || 'Deathmatch',
           hasWon: true,
-          seasonId: match.metadata.season_id || match.metadata.season || 'Current',
+          seasonId: extractSeasonId(match.metadata) || 'Current',
           squadMembers: presentSquadMembers,
         });
       } else {
@@ -140,14 +163,14 @@ export function findSharedMatches(players, allMatches, filterOptions = {}) {
             match,
             matchId,
             mapName,
-            gameStart: match.metadata.game_start_patched || 'Recent',
+            gameStart: match.metadata.game_start_patched || match.metadata.game_start || 'Recent',
             mode: match.metadata.mode || 'Competitive',
             hasWon,
             roundsWon,
             roundsLost,
             scoreline: `${roundsWon} - ${roundsLost}`,
             teamColor,
-            seasonId: match.metadata.season_id || match.metadata.season || 'Current',
+            seasonId: extractSeasonId(match.metadata) || 'Current',
             squadMembers: presentSquadMembers,
           });
         }

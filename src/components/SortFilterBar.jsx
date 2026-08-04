@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import GlassSurface from './GlassSurface';
 import { useSquad } from '../context/SquadContext';
 import { ALL_VALORANT_SEASONS_MAP, resolveSeasonName } from '../api/valorantApi';
+import { extractSeasonId } from '../lib/synergy';
 import { ArrowUpDown, Layers, Calendar, Filter, Swords, User, Trophy } from 'lucide-react';
 
 export default function SortFilterBar({
@@ -26,14 +27,14 @@ export default function SortFilterBar({
       ...Object.entries(ALL_VALORANT_SEASONS_MAP),
     ];
 
-    // Extract any unexpected season IDs present in matches
+    // Extract any unexpected season IDs present in actual match data
     const existingKeys = new Set(list.map(([k]) => k.toLowerCase()));
     matches.forEach((m) => {
-      const sId = m.metadata?.season_id || m.metadata?.season;
-      if (sId && !existingKeys.has(sId.toLowerCase())) {
+      const sId = extractSeasonId(m.metadata);
+      if (sId && !existingKeys.has(sId)) {
         const resolvedName = resolveSeasonName(sId, seasonsMetadata);
         list.push([sId, resolvedName]);
-        existingKeys.add(sId.toLowerCase());
+        existingKeys.add(sId);
       }
     });
 
