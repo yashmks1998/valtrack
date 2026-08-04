@@ -9,7 +9,7 @@ import SummaryTiles from './components/SummaryTiles';
 import SortFilterBar from './components/SortFilterBar';
 import MapCard from './components/MapCard';
 import SharedMatchLog from './components/SharedMatchLog';
-import PlayerProfilePage from './components/PlayerProfile/PlayerProfilePage';
+import PlayerProfile from './components/Profile/PlayerProfile';
 import ValorantLoader from './components/ValorantLoader';
 import EmptyState from './components/EmptyState';
 import GlassSurface from './components/GlassSurface';
@@ -206,9 +206,9 @@ function SquadSynergyAppContent() {
 
       {/* Full High-Tech Player Profile Page Overlay */}
       {selectedPlayerForDrawer && (
-        <PlayerProfilePage
-          player={selectedPlayerForDrawer}
-          onClose={() => setSelectedPlayerForDrawer(null)}
+        <PlayerProfile 
+          player={selectedPlayerForDrawer} 
+          onClose={() => setSelectedPlayerForDrawer(null)} 
         />
       )}
 

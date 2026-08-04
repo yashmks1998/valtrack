@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getValorantMaps, getValorantAgents, getCompetitiveTiers, getValorantSeasons } from '../api/valorantApi';
-import { fetchAccount, fetchRank, fetchMatches } from '../api/henrik';
+import { fetchAccount, fetchRank, fetchMatches, fetchMMRHistory } from '../api/henrik';
 import { PRECACHED_SQUAD_MATCHES } from '../utils/squadCache';
 
 const SquadContext = createContext();
@@ -109,9 +109,10 @@ export function SquadProvider({ children }) {
       const account = await fetchAccount(name, tag);
       const effectiveRegion = account.region || region || 'ap';
       
-      const [rank, playerMatches] = await Promise.all([
+      const [rank, playerMatches, mmrHistory] = await Promise.all([
         fetchRank(effectiveRegion, name, tag).catch(() => null),
         fetchMatches(effectiveRegion, name, tag).catch(() => []),
+        fetchMMRHistory(effectiveRegion, name, tag).catch(() => []),
       ]);
 
       // Normalise rank into the consistent shape the UI components expect:
@@ -124,6 +125,8 @@ export function SquadProvider({ children }) {
           rankImage: rank.images?.small || rank.rankImage || null,
           rankingInTier: rank.ranking_in_tier ?? rank.rankingInTier ?? 0,
           elo: rank.elo ?? 0,
+          seasonal: rank.seasonal || [],
+          highest_rank: rank.highest_rank || null,
         };
       }
 
@@ -131,6 +134,7 @@ export function SquadProvider({ children }) {
         ...account,
         region: effectiveRegion,
         rank: normalisedRank,
+        mmrHistory,
       };
 
       setPlayers((prev) => [...prev, newPlayer]);
@@ -175,6 +179,8 @@ export function SquadProvider({ children }) {
       setIsLoading(false);
     }
   };
+
+
 
   /**
    * Remove player from squad

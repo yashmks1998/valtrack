@@ -44,6 +44,70 @@ export const ROLE_COLOR_MAP = {
   Unknown: '#9ca3af',
 };
 
+// Extract season UUID from ANY Henrik match metadata shape:
+export function extractSeasonId(metadata) {
+  if (!metadata) return '';
+  if (typeof metadata.season_id === 'string' && metadata.season_id)
+    return metadata.season_id.toLowerCase();
+  const s = metadata.season;
+  if (!s) return '';
+  if (typeof s === 'object' && s.id) return String(s.id).toLowerCase();
+  if (typeof s === 'string') return s.toLowerCase();
+  return '';
+}
+
+// Convert season short code to human label:
+export function seasonShortToLabel(short = '') {
+  if (!short) return 'Unknown Season';
+  const s = short.toLowerCase().trim();
+  const v = s.match(/^v(\d+)a(\d+)$/);
+  if (v) return `${2025 + parseInt(v[1])} Act ${v[2]}`;
+  const e = s.match(/^e(\d+)a(\d+)$/);
+  if (e) return `Episode ${e[1]} Act ${e[2]}`;
+  return short;
+}
+
+// Sort season short codes newest first:
+export function compareSeasonShort(a = '', b = '') {
+  const parse = s => {
+    const v = s.match(/^v(\d+)a(\d+)$/);
+    if (v) return (100 + parseInt(v[1])) * 10 + parseInt(v[2]);
+    const e = s.match(/^e(\d+)a(\d+)$/);
+    if (e) return parseInt(e[1]) * 10 + parseInt(e[2]);
+    return 0;
+  };
+  return parse(b) - parse(a); // descending
+}
+
+// Normalise UI mode label -> Henrik API param:
+export function normaliseMode(mode = '') {
+  const map = {
+    competitive: 'competitive', ranked: 'competitive',
+    unrated: 'unrated', swiftplay: 'swiftplay',
+    deathmatch: 'deathmatch', 'team deathmatch': 'teamdeathmatch',
+    teamdeathmatch: 'teamdeathmatch', 'spike rush': 'spikerush',
+    spikerush: 'spikerush', premier: 'premier', escalation: 'escalation',
+  };
+  return map[mode.trim().toLowerCase()] ?? mode.trim().toLowerCase();
+}
+
+// Client-side season filter:
+export function filterMatchesBySeason(matches, seasonUUID) {
+  if (!seasonUUID || seasonUUID === 'lifetime') return matches;
+  const t = seasonUUID.toLowerCase();
+  return matches.filter(m => extractSeasonId(m.metadata) === t);
+}
+
+// Outcome per match:
+export function getOutcome(match, puuid) {
+  const player = match.players?.all_players?.find(p => (p.puuid || '').toLowerCase() === (puuid || '').toLowerCase());
+  if (!player) return 'unknown';
+  const team = (player.team || '').toLowerCase();
+  const won = match.teams?.[team]?.has_won;
+  if (won === undefined || won === null) return 'draw'; // Not all modes have win/loss
+  return won ? 'win' : 'loss';
+}
+
 /**
  * Filter all matches where a specific player participated (by PUUID, Riot ID, or Name)
  */
@@ -87,11 +151,15 @@ export function computeVitalStats(playerMatches = [], player) {
   }
 
   let totalScore = 0;
+  let totalRoundsPlayed = 0;
   let totalKills = 0;
   let totalDeaths = 0;
+  let totalAssists = 0;
   let totalHeadshots = 0;
   let totalBodyshots = 0;
   let totalLegshots = 0;
+  let totalDamageMade = 0;
+  let totalKAST = 0;
   let wins = 0;
   let gamesCount = 0;
 
@@ -107,10 +175,10 @@ export function computeVitalStats(playerMatches = [], player) {
     });
 
     if (!pObj) return;
+    const actualPuuid = pObj.puuid || puuidLower;
 
     gamesCount++;
 
-    // Determine victory
     const pTeam = (pObj.team || '').toLowerCase();
     const teamObj = m.teams?.[pTeam];
     const hasWon = teamObj?.has_won ?? false;
@@ -120,16 +188,58 @@ export function computeVitalStats(playerMatches = [], player) {
     totalScore += stats.score || 0;
     totalKills += stats.kills || 0;
     totalDeaths += stats.deaths || 0;
+    totalAssists += stats.assists || 0;
     totalHeadshots += stats.headshots || 0;
     totalBodyshots += stats.bodyshots || 0;
     totalLegshots += stats.legshots || 0;
+    totalDamageMade += stats.damage_made || 0;
+
+    const rounds = m.rounds || [];
+    totalRoundsPlayed += rounds.length;
+
+    // KAST Calculation
+    rounds.forEach((r) => {
+      let k = false;
+      let a = false;
+      let s = true;
+      let t = false; // Trade logic is complex without precise timestamps, we'll approximate S
+
+      const playerStats = (r.player_stats || []).find(ps => (ps.puuid || '').toLowerCase() === actualPuuid.toLowerCase());
+      if (playerStats) {
+        if (playerStats.kills && playerStats.kills.length > 0) k = true;
+      }
+
+      // Check if player died (S)
+      (r.player_stats || []).forEach(ps => {
+        (ps.kills || []).forEach(kill => {
+          if ((kill.victim_puuid || '').toLowerCase() === actualPuuid.toLowerCase()) {
+            s = false;
+            // Check if killer was traded by a teammate
+            const killerPuuid = (kill.killer_puuid || '').toLowerCase();
+            const killerDeath = (r.player_stats || []).find(ps2 => 
+              (ps2.kills || []).some(k2 => (k2.victim_puuid || '').toLowerCase() === killerPuuid)
+            );
+            if (killerDeath) t = true;
+          }
+          if ((kill.assistants || []).some(ast => (ast.puuid || '').toLowerCase() === actualPuuid.toLowerCase())) {
+            a = true;
+          }
+        });
+      });
+
+      if (k || a || s || t) {
+        totalKAST++;
+      }
+    });
   });
 
   const winRate = gamesCount > 0 ? Math.round((wins / gamesCount) * 100) : 0;
-  const avgACS = gamesCount > 0 ? Math.round(totalScore / gamesCount) : 0;
+  const avgACS = totalRoundsPlayed > 0 ? Math.round(totalScore / totalRoundsPlayed) : 0;
   const avgKD = totalDeaths > 0 ? (totalKills / totalDeaths).toFixed(2) : totalKills.toFixed(2);
   const totalShots = totalHeadshots + totalBodyshots + totalLegshots;
   const avgHeadshot = totalShots > 0 ? Math.round((totalHeadshots / totalShots) * 100) : 0;
+  const avgADR = totalRoundsPlayed > 0 ? Math.round(totalDamageMade / totalRoundsPlayed) : 0;
+  const kastPercent = totalRoundsPlayed > 0 ? Math.round((totalKAST / totalRoundsPlayed) * 100) : 0;
 
   return {
     totalGames: gamesCount,
@@ -139,6 +249,8 @@ export function computeVitalStats(playerMatches = [], player) {
     avgACS,
     avgKD: parseFloat(avgKD),
     avgHeadshot,
+    avgADR,
+    kastPercent
   };
 }
 
@@ -207,6 +319,7 @@ export function computeAgentMastery(playerMatches = [], player) {
     const winRate = entry.games > 0 ? Math.round((entry.wins / entry.games) * 100) : 0;
     const avgACS = entry.games > 0 ? Math.round(entry.score / entry.games) : 0;
     const avgKD = entry.deaths > 0 ? (entry.kills / entry.deaths).toFixed(2) : entry.kills.toFixed(2);
+    const kda = entry.deaths > 0 ? ((entry.kills + entry.assists) / entry.deaths).toFixed(2) : (entry.kills + entry.assists).toFixed(2);
 
     const mapBreakdown = Object.values(entry.mapStats).map((ms) => ({
       map: ms.map,
@@ -226,6 +339,7 @@ export function computeAgentMastery(playerMatches = [], player) {
       winRate,
       avgACS,
       avgKD: parseFloat(avgKD),
+      kda: parseFloat(kda),
       isMain: false,
       mapBreakdown,
     };
@@ -370,45 +484,24 @@ export function computeRoleDistribution(playerMatches = [], player) {
 /**
  * Compute Rank RR Progression data points for charting
  */
-export function computeRankProgression(playerMatches = [], player) {
-  const currentElo = player?.rank?.elo || 1350;
-  const currentRR = player?.rank?.rankingInTier || 50;
-
-  // Synthesize realistic match-by-match RR progression trend based on W/L history
+export function computeRankProgression(mmrHistory = [], playerMatches = []) {
+  if (!mmrHistory || mmrHistory.length === 0) return [];
+  
+  // Sort mmrHistory oldest to newest for the chart
+  const sortedHistory = [...mmrHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
+  
   const points = [];
-  let runningElo = currentElo;
-  let runningRR = currentRR;
-
-  const reversedMatches = [...playerMatches].reverse();
-
-  reversedMatches.forEach((m, idx) => {
-    const puuidLower = (player?.puuid || '').toLowerCase();
-    const nameLower = (player?.name || '').toLowerCase();
-
-    const pObj = (m.players?.all_players || []).find((p) => {
-      const pPuuid = (p.puuid || '').toLowerCase();
-      const pName = (p.name || '').toLowerCase();
-      return (puuidLower && pPuuid === puuidLower) || pName === nameLower;
-    });
-
-    const pTeam = (pObj?.team || '').toLowerCase();
-    const hasWon = m.teams?.[pTeam]?.has_won ?? true;
-    const mapName = m.metadata?.map || 'Valorant Match';
-    const date = m.metadata?.game_start_patched || `Match ${idx + 1}`;
-
-    const rrDelta = hasWon ? Math.floor(Math.random() * 8) + 18 : -(Math.floor(Math.random() * 6) + 14);
-    runningRR = Math.max(0, Math.min(100, runningRR + rrDelta));
-    runningElo += rrDelta;
-
+  
+  sortedHistory.forEach((h, idx) => {
     points.push({
       matchIndex: idx + 1,
-      map: mapName,
-      hasWon,
-      date,
-      rr: runningRR,
-      elo: runningElo,
-      result: hasWon ? 'VICTORY' : 'DEFEAT',
-      score: pObj?.stats?.score || 220,
+      map: h.map?.name || 'Unknown Map',
+      hasWon: h.last_mmr_change > 0,
+      date: h.date,
+      rr: h.ranking_in_tier,
+      elo: h.elo,
+      result: h.last_mmr_change > 0 ? 'VICTORY' : 'DEFEAT',
+      score: 0, // Match score not available in mmrHistory directly
     });
   });
 

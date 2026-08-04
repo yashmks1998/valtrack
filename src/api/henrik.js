@@ -97,7 +97,7 @@ export async function fetchAccount(name, tag, apiKey = null) {
 }
 
 /**
- * Fetch Rank (MMR) via /valorant/v2/mmr/:region/:name/:tag
+ * Fetch Rank (MMR) via /valorant/v3/mmr/:region/pc/:name/:tag
  * Returns a normalised rank object compatible with ProfileHeader.jsx
  */
 export async function fetchRank(region = DEFAULT_REGION, name, tag, apiKey = null) {
@@ -108,37 +108,28 @@ export async function fetchRank(region = DEFAULT_REGION, name, tag, apiKey = nul
   return enqueueRequest(async () => {
     try {
       const res = await henrikFetch(
-        `/valorant/v2/mmr/${targetRegion}/${cleanName}/${cleanTag}`,
+        `/valorant/v3/mmr/${targetRegion}/pc/${cleanName}/${cleanTag}`,
         apiKey
       );
 
-      // Henrik v2 MMR response: res.data.current_data
-      if (res?.data?.current_data) {
-        const curr = res.data.current_data;
-        return {
-          // Match the keys ProfileHeader.jsx expects:
-          current_tier_patched: curr.currenttierpatched || 'Unranked',
-          ranking_in_tier: curr.ranking_in_tier ?? 0,
-          elo: curr.elo ?? 0,
-          images: {
-            small: curr.images?.small || null,
-            large: curr.images?.large || null,
-            triangle_up: curr.images?.triangle_up || null,
-          },
-        };
-      }
-
-      // Fallback: try res.data directly (some API versions flatten it)
-      if (res?.data?.currenttierpatched) {
+      if (res?.data) {
         const d = res.data;
+        const current = d.current || {};
+        const peak = d.peak || {};
+        
         return {
-          current_tier_patched: d.currenttierpatched || 'Unranked',
-          ranking_in_tier: d.ranking_in_tier ?? 0,
-          elo: d.elo ?? 0,
+          current_tier_patched: current.tier?.name || 'Unranked',
+          ranking_in_tier: current.rr ?? 0,
+          elo: current.elo ?? 0,
           images: {
-            small: d.images?.small || null,
-            large: d.images?.large || null,
+            small: current.tier?.id ? `https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/${current.tier.id}/smallicon.png` : null,
+            large: current.tier?.id ? `https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/${current.tier.id}/largeicon.png` : null,
           },
+          seasonal: d.seasonal || [],
+          highest_rank: {
+            patched_tier: peak.tier?.name || 'Unranked',
+            season: peak.season?.short || ''
+          }
         };
       }
     } catch (err) {
@@ -151,6 +142,8 @@ export async function fetchRank(region = DEFAULT_REGION, name, tag, apiKey = nul
       ranking_in_tier: 0,
       elo: 0,
       images: { small: null, large: null },
+      seasonal: [],
+      highest_rank: null,
     };
   });
 }
@@ -165,27 +158,60 @@ export async function fetchMatches(region = DEFAULT_REGION, name, tag, mode = ''
   const cleanTag = encodeURIComponent(tag.trim());
   const targetRegion = (region || DEFAULT_REGION).toLowerCase();
 
-  // Build query — fetch up to 20 (Henrik free tier cap per call)
-  const modeParam = mode ? `&mode=${mode}` : '';
-  const endpoint = `/valorant/v3/matches/${targetRegion}/${cleanName}/${cleanTag}?size=20${modeParam}`;
+  const mapMode = {
+    competitive: 'competitive', ranked: 'competitive',
+    unrated: 'unrated', swiftplay: 'swiftplay',
+    deathmatch: 'deathmatch', 'team deathmatch': 'teamdeathmatch',
+    teamdeathmatch: 'teamdeathmatch', 'spike rush': 'spikerush',
+    spikerush: 'spikerush', premier: 'premier', escalation: 'escalation',
+  };
+  const normMode = mapMode[mode.trim().toLowerCase()] ?? mode.trim().toLowerCase();
+  const modeParam = normMode ? `&mode=${normMode}` : '';
+  
+  let allMatches = [];
+  let page = 0;
+  let hasMore = true;
+
+  while (hasMore && page < 5) {
+    const endpoint = `/valorant/v3/matches/${targetRegion}/${cleanName}/${cleanTag}?size=20&page=${page}${modeParam}`;
+    try {
+      const res = await enqueueRequest(async () => henrikFetch(endpoint, apiKey));
+      if (res?.data && Array.isArray(res.data)) {
+        allMatches.push(...res.data);
+        if (res.data.length < 20) {
+          hasMore = false;
+        }
+      } else {
+        hasMore = false;
+      }
+    } catch (err) {
+      console.warn(`Could not fetch matches page ${page} for ${name}#${tag}:`, err.message);
+      hasMore = false;
+    }
+    page++;
+  }
+  return allMatches;
+}
+
+/**
+ * Fetch stored MMR history via /valorant/v1/stored-mmr-history/:region/:name/:tag
+ */
+export async function fetchMMRHistory(region = DEFAULT_REGION, name, tag, apiKey = null) {
+  const cleanName = encodeURIComponent(name.trim());
+  const cleanTag = encodeURIComponent(tag.trim());
+  const targetRegion = (region || DEFAULT_REGION).toLowerCase();
 
   return enqueueRequest(async () => {
     try {
-      const res = await henrikFetch(endpoint, apiKey);
+      const res = await henrikFetch(
+        `/valorant/v1/stored-mmr-history/${targetRegion}/${cleanName}/${cleanTag}`,
+        apiKey
+      );
       if (res?.data && Array.isArray(res.data)) {
-        // Normalise season_id: Henrik v3 embeds it as metadata.season_id (UUID string)
-        return res.data.map((match) => {
-          if (match?.metadata) {
-            // Some versions return season as nested object { id, short }
-            if (match.metadata.season && typeof match.metadata.season === 'object') {
-              match.metadata.season_id = match.metadata.season.id || match.metadata.season_id || '';
-            }
-          }
-          return match;
-        });
+        return res.data;
       }
     } catch (err) {
-      console.warn(`Could not fetch matches for ${name}#${tag}:`, err.message);
+      console.warn(`Could not fetch MMR history for ${name}#${tag}:`, err.message);
     }
     return [];
   });

@@ -3,32 +3,66 @@
 @tailwind utilities;
 
 @layer utilities {
-  /* iOS 26 Liquid Glass Material System */
+  :root {
+    --bg-base: #0f1115;
+    --bg-card: #16181d;
+    --bg-hover: #1c1f26;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-glow: rgba(255, 255, 255, 0.15);
+    --red: #ff4655;
+    --red-dark: #cc2233;
+    --green: #22c55e;
+    --loss: #ef4444;
+    --draw: #8b8f98;
+    --muted: #8b8f98;
+    --cyan: #00f0ff;
+    --gold: #f59e0b;
+  }
+
+  .tracker-glass {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .glow-iron { box-shadow: 0 0 20px rgba(139,89,60,0.6); }
+  .glow-bronze { box-shadow: 0 0 20px rgba(139,89,60,0.6); }
+  .glow-silver { box-shadow: 0 0 20px rgba(180,180,180,0.6); }
+  .glow-gold { box-shadow: 0 0 20px rgba(245,158,11,0.6); }
+  .glow-platinum { box-shadow: 0 0 20px rgba(20,184,166,0.6); }
+  .glow-diamond { box-shadow: 0 0 20px rgba(99,102,241,0.6); }
+  .glow-ascendant { box-shadow: 0 0 20px rgba(34,197,94,0.6); }
+  .glow-immortal { box-shadow: 0 0 20px rgba(239,68,68,0.6); }
+  .glow-radiant { box-shadow: 0 0 20px rgba(250,204,21,0.8); }
+
+  /* iOS 26 Liquid Glass Material System - Darker Theme */
   .glass-layer-1 {
-    background: rgba(255, 255, 255, 0.07);
-    backdrop-filter: blur(20px) saturate(180%) brightness(1.1);
-    -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.1);
+    background: rgba(5, 5, 10, 0.5);
+    backdrop-filter: blur(24px) saturate(140%) brightness(0.85);
+    -webkit-backdrop-filter: blur(24px) saturate(140%) brightness(0.85);
     border-radius: 28px;
     position: relative;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
   }
 
   .glass-layer-2 {
-    background: rgba(255, 255, 255, 0.11);
-    backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
-    -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
+    background: rgba(10, 11, 15, 0.6);
+    backdrop-filter: blur(32px) saturate(150%) brightness(0.9);
+    -webkit-backdrop-filter: blur(32px) saturate(150%) brightness(0.9);
     border-radius: 28px;
     position: relative;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
   }
 
   .glass-layer-3 {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(32px) saturate(190%) brightness(1.2);
-    -webkit-backdrop-filter: blur(32px) saturate(190%) brightness(1.2);
+    background: rgba(15, 17, 24, 0.65);
+    backdrop-filter: blur(40px) saturate(160%) brightness(0.95);
+    -webkit-backdrop-filter: blur(40px) saturate(160%) brightness(0.95);
     border-radius: 28px;
     position: relative;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
   }
 
   /* Specular Light Catching Border */
