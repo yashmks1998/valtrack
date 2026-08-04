@@ -2,7 +2,7 @@
 // Targets Henrik API v3 endpoints (stable, widely supported)
 
 const HENRIK_BASE_URL = 'https://api.henrikdev.xyz';
-const DEFAULT_API_KEY = 'HDEV-f931b513-abaf-4287-a229-e051a2a577ea';
+const DEFAULT_API_KEY = 'HDEV-438470dc-3822-4c7a-9613-323bcf59ed66';
 const DEFAULT_REGION = 'ap';
 
 // Module-level account cache
@@ -17,7 +17,7 @@ function enqueueRequest(fn) {
     await new Promise((resolve) => setTimeout(resolve, STAGGER_MS));
     return fn();
   });
-  requestQueue = result.catch(() => {}); // prevent queue breakage on error
+  requestQueue = result.catch(() => { }); // prevent queue breakage on error
   return result;
 }
 
@@ -204,7 +204,7 @@ export async function searchPlayerAccount(queryInput, apiKey = null) {
       try {
         const acc = await fetchAccount(name.trim(), tag.trim(), apiKey);
         if (acc) return [acc];
-      } catch (err) {}
+      } catch (err) { }
     }
   }
 
