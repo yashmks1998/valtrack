@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import GlassSurface from '../GlassSurface';
+import ValorantImage from '../ValorantImage';
 import MatchScoreboard from './MatchScoreboard';
 import { ChevronDown, Calendar, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -54,11 +55,7 @@ export default function MatchRow({ match, player }) {
         {/* Left: Agent Icon, Map & W/L Badge */}
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-black/60 border border-white/20 p-1 overflow-hidden shrink-0">
-            {pObj?.assets?.agent?.small ? (
-              <img src={pObj.assets.agent.small} alt={pObj.character} className="w-full h-full object-contain" />
-            ) : (
-              <Shield className="w-full h-full text-cyan-400 p-2" />
-            )}
+            <ValorantImage src={pObj?.assets?.agent?.small} alt={pObj?.character} type="agent" className="w-full h-full" />
           </div>
 
           <div>

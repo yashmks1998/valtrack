@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GlassSurface, { SPRINGS } from './GlassSurface';
+import ValorantImage from './ValorantImage';
 import MapCardExpanded from './MapCardExpanded';
 import { ChevronDown, Trophy, Shield, Swords } from 'lucide-react';
 import { useSquad } from '../context/SquadContext';
@@ -42,7 +43,7 @@ export default function MapCard({ mapData }) {
         {/* Background Splash Art with Dark Gradient Overlay */}
         {splashImage && (
           <div className="absolute inset-0 z-0 overflow-hidden rounded-[28px] opacity-25 group-hover:opacity-35 transition-opacity">
-            <img src={splashImage} alt={displayName} className="w-full h-full object-cover" loading="lazy" />
+            <ValorantImage src={splashImage} alt={displayName} type="map" className="absolute inset-0 w-full h-full" loading="lazy" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0b0f] via-[#0a0b0f]/80 to-transparent" />
           </div>
         )}
@@ -89,11 +90,7 @@ export default function MapCard({ mapData }) {
             >
               <div className="flex items-center gap-2 truncate">
                 <div className="w-6 h-6 rounded-md bg-black/60 p-0.5 shrink-0 flex items-center justify-center">
-                  {topPerformer.topAgentIcon ? (
-                    <img src={topPerformer.topAgentIcon} alt={topPerformer.topAgent} className="w-full h-full object-contain" />
-                  ) : (
-                    <Shield className="w-3.5 h-3.5 text-cyan-400" />
-                  )}
+                  <ValorantImage src={topPerformer.topAgentIcon} alt={topPerformer.topAgent} type="agent" className="w-full h-full" />
                 </div>
                 <div className="text-xs font-mono text-white truncate">
                   Top MVP: <strong className="text-amber-400 group-hover/mvp:underline">{topPerformer.name}</strong>

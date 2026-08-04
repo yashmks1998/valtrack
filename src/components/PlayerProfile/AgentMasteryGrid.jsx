@@ -1,8 +1,11 @@
 import React from 'react';
 import AgentMasteryCard from './AgentMasteryCard';
+import { useSquad } from '../../context/SquadContext';
 import { UserCheck } from 'lucide-react';
 
 export default function AgentMasteryGrid({ agentsList = [] }) {
+  const { agentsMetadata } = useSquad();
+
   if (!agentsList || agentsList.length === 0) {
     return (
       <div className="text-xs font-mono text-gray-400 bg-black/40 border border-white/10 rounded-2xl p-6 text-center">
@@ -27,7 +30,7 @@ export default function AgentMasteryGrid({ agentsList = [] }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {agentsList.map((agentData) => (
-          <AgentMasteryCard key={agentData.agent} agentData={agentData} />
+          <AgentMasteryCard key={agentData.agent} agentData={agentData} agentsMetadata={agentsMetadata} />
         ))}
       </div>
     </div>

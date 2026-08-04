@@ -1,5 +1,6 @@
 import React from 'react';
 import { Trophy, Swords, Zap, ChevronRight, Crown, Flame } from 'lucide-react';
+import ValorantImage from './ValorantImage';
 import { useApp } from '../context/AppContext';
 
 export default function MapSynergyCard({ mapData }) {
@@ -32,10 +33,12 @@ export default function MapSynergyCard({ mapData }) {
       {/* Background Splash Art with Dark Gradient Overlay */}
       <div className="h-44 relative overflow-hidden bg-val-black">
         {splashImage ? (
-          <img
+          <ValorantImage
             src={splashImage}
             alt={displayName}
-            className="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-700 ease-out"
+            type="map"
+            className="absolute inset-0 w-full h-full opacity-50 group-hover:scale-105 transition-transform duration-700 ease-out"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-r from-val-black via-val-dark to-val-card opacity-80" />
@@ -88,11 +91,7 @@ export default function MapSynergyCard({ mapData }) {
             <div className="flex items-center gap-2.5">
               <div className="relative">
                 <div className="w-8 h-8 rounded-full bg-val-gold/20 border border-val-gold flex items-center justify-center overflow-hidden">
-                  {bestPlayer.topAgentIcon ? (
-                    <img src={bestPlayer.topAgentIcon} alt={bestPlayer.topAgent} className="w-7 h-7 object-contain" />
-                  ) : (
-                    <Crown className="w-4 h-4 text-val-gold" />
-                  )}
+                  <ValorantImage src={bestPlayer.topAgentIcon} alt={bestPlayer.topAgent} type="agent" className="w-7 h-7" />
                 </div>
                 <span className="absolute -top-1 -right-1 bg-val-gold text-val-black p-0.5 rounded-full">
                   <Crown className="w-2.5 h-2.5 fill-val-black" />

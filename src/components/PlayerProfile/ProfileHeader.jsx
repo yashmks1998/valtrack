@@ -1,5 +1,6 @@
 import React from 'react';
 import GlassSurface from '../GlassSurface';
+import ValorantImage from '../ValorantImage';
 import { Trophy, Swords, Crosshair, TrendingUp, Shield, Sparkles } from 'lucide-react';
 
 export default function ProfileHeader({ player, vitalStats }) {
@@ -17,7 +18,7 @@ export default function ProfileHeader({ player, vitalStats }) {
       
       {/* Background Player Card Art with Dark Refractive Gradient Overlay */}
       <div className="absolute inset-0 z-0 opacity-25 overflow-hidden">
-        <img src={cardArt} alt="Card Art" className="w-full h-full object-cover filter blur-[2px] scale-105" />
+        <ValorantImage src={cardArt} alt="Card Art" type="card" className="absolute inset-0 w-full h-full" style={{ filter: 'blur(2px)', transform: 'scale(1.05)' }} />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0a0b0f] via-[#0a0b0f]/80 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0b0f] via-transparent to-[#0a0b0f]/40" />
       </div>
@@ -28,7 +29,7 @@ export default function ProfileHeader({ player, vitalStats }) {
         <div className="flex items-center gap-5">
           {/* Avatar Icon */}
           <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-black/60 border-2 border-white/30 p-1 overflow-hidden shrink-0 shadow-2xl relative">
-            <img src={player.cardSmall || cardArt} alt={player.name} className="w-full h-full object-cover rounded-xl" />
+            <ValorantImage src={player.cardSmall || cardArt} alt={player.name} type="card" className="w-full h-full rounded-xl" />
             <div className="absolute top-1 right-1 bg-black/80 backdrop-blur-md px-1.5 py-0.5 rounded-full text-[9px] font-mono text-cyan-300 font-bold border border-cyan-400/40">
               Lvl {player.accountLevel || 100}
             </div>
@@ -46,7 +47,7 @@ export default function ProfileHeader({ player, vitalStats }) {
             <div className="flex flex-wrap items-center gap-3 mt-2">
               {/* Rank Badge */}
               <div className="flex items-center gap-2 bg-black/50 border border-white/20 px-3 py-1.5 rounded-2xl backdrop-blur-md">
-                <img src={rankImage} alt={tierName} className="w-6 h-6 object-contain" />
+                <ValorantImage src={rankImage} alt={tierName} type="rank" className="w-6 h-6" />
                 <div className="font-mono text-xs">
                   <span className="text-white font-bold uppercase">{tierName}</span>
                   <span className="text-cyan-300 ml-1.5">({rank.rankingInTier || 50} RR)</span>

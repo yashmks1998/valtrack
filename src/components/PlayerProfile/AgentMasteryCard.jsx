@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import GlassSurface from '../GlassSurface';
+import ValorantImage from '../ValorantImage';
 import { ROLE_COLOR_MAP } from '../../lib/playerStats';
 import { ChevronDown, Sparkles, Swords, Trophy, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function AgentMasteryCard({ agentData }) {
+export default function AgentMasteryCard({ agentData, agentsMetadata = [] }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const {
@@ -18,6 +19,12 @@ export default function AgentMasteryCard({ agentData }) {
     isMain,
     mapBreakdown,
   } = agentData;
+
+  // Look up the icon from static agentsMetadata as a guaranteed fallback
+  const metaAgent = agentsMetadata.find(
+    (a) => a.displayName?.toLowerCase() === agent?.toLowerCase()
+  );
+  const fallbackIcon = metaAgent?.displayIconSmall || metaAgent?.displayIcon || null;
 
   const roleColor = ROLE_COLOR_MAP[role] || '#9ca3af';
 
@@ -47,13 +54,7 @@ export default function AgentMasteryCard({ agentData }) {
         {/* Left: Agent Icon & Name */}
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-black/60 border border-white/20 p-1 overflow-hidden shrink-0 group-hover:scale-105 transition-all">
-            {icon ? (
-              <img src={icon} alt={agent} className="w-full h-full object-contain" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center font-teko text-white font-bold">
-                {agent[0]}
-              </div>
-            )}
+            <ValorantImage src={icon || fallbackIcon} alt={agent} type="agent" fallbackSrc={fallbackIcon} className="w-full h-full" />
           </div>
 
           <div>
