@@ -1,112 +1,92 @@
-import React, { useState } from 'react';
+import React from 'react';
 import GlassSurface from '../GlassSurface';
-import { TrendingUp, Activity } from 'lucide-react';
+import { TrendingUp, Shield } from 'lucide-react';
 
 export default function RankProgressionChart({ points = [] }) {
-  const [activePoint, setActivePoint] = useState(null);
+  if (!points || points.length === 0) {
+    return (
+      <GlassSurface level="1" className="p-5 text-center">
+        <div className="text-xs font-mono text-gray-400">
+          Rank Progression history currently unavailable.
+        </div>
+      </GlassSurface>
+    );
+  }
 
-  if (!points || points.length === 0) return null;
+  // Calculate bounding box for custom SVG Area Chart
+  const values = points.map((p) => p.rr);
+  const minVal = Math.min(...values) - 10;
+  const maxVal = Math.max(...values) + 10;
+  const range = maxVal - minVal || 1;
 
-  // SVG Chart Dimensions
   const width = 800;
   const height = 180;
-  const padding = 30;
 
-  const minRR = Math.min(...points.map((p) => p.rr), 0);
-  const maxRR = Math.max(...points.map((p) => p.rr), 100);
+  // Build SVG path points
+  const coords = points.map((p, index) => {
+    const x = (index / (points.length - 1 || 1)) * width;
+    const y = height - ((p.rr - minVal) / range) * (height - 30) - 15;
+    return { x, y, rr: p.rr, match: p.match, tier: p.tier };
+  });
 
-  const getX = (idx) => {
-    if (points.length <= 1) return width / 2;
-    return padding + (idx / (points.length - 1)) * (width - padding * 2);
-  };
+  const linePath = coords.reduce(
+    (acc, curr, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${curr.x},${curr.y}`,
+    ''
+  );
 
-  const getY = (val) => {
-    const range = maxRR - minRR || 1;
-    return height - padding - ((val - minRR) / range) * (height - padding * 2);
-  };
-
-  // Build SVG Path
-  const pathD = points
-    .map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${getX(idx)} ${getY(p.rr)}`)
-    .join(' ');
-
-  const areaD = `${pathD} L ${getX(points.length - 1)} ${height - padding} L ${getX(0)} ${height - padding} Z`;
+  const areaPath = `${linePath} L ${width},${height} L 0,${height} Z`;
 
   return (
-    <GlassSurface level="1" className="p-6 space-y-4 shadow-xl">
+    <GlassSurface level="2" useDistortion className="p-4 sm:p-6 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-[#ff4655]" />
+          <TrendingUp className="w-5 h-5 text-cyan-400 animate-pulse" />
           <h3 className="font-oswald-header text-lg text-white font-bold">
-            RANK PROGRESSION & MATCH ELO TREND
+            RANK PROGRESSION (COMPETITIVE RR TREND)
           </h3>
         </div>
-        <span className="text-xs font-mono text-gray-400">
-          Last {points.length} Matches Logged
-        </span>
+        <div className="text-xs font-mono text-cyan-300 font-bold bg-white/10 px-2.5 py-1 rounded-full border border-white/20">
+          {points[points.length - 1]?.rr || 0} RR Current
+        </div>
       </div>
 
-      {/* SVG Line / Area Chart Container */}
-      <div className="relative w-full overflow-hidden bg-black/40 border border-white/10 rounded-2xl p-4">
-        
-        {/* Interactive Hover Tooltip */}
-        {activePoint && (
-          <div
-            className="absolute z-30 bg-black/90 border border-cyan-400/50 rounded-xl p-3 shadow-2xl backdrop-blur-xl pointer-events-none transform -translate-x-1/2 -translate-y-full transition-all text-xs font-mono"
-            style={{
-              left: `${(getX(activePoint.index) / width) * 100}%`,
-              top: `${(getY(activePoint.rr) / height) * 100}%`,
-            }}
-          >
-            <div className="font-bold text-white uppercase">{activePoint.map}</div>
-            <div className={`font-bold ${activePoint.hasWon ? 'text-emerald-400' : 'text-red-400'}`}>
-              {activePoint.result} ({activePoint.rr} RR)
-            </div>
-            <div className="text-gray-400 text-[10px]">{activePoint.date}</div>
-          </div>
-        )}
-
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-44 overflow-visible">
+      {/* SVG Responsive Area Chart */}
+      <div className="relative w-full h-40 sm:h-52 bg-black/40 border border-white/10 rounded-2xl p-2 sm:p-4 overflow-hidden">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full preserve-3d overflow-visible">
           <defs>
-            <linearGradient id="valorantRedGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ff4655" stopOpacity="0.45" />
-              <stop offset="100%" stopColor="#ff4655" stopOpacity="0.0" />
+            <linearGradient id="rrGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
-          {/* Grid lines */}
-          <line x1={padding} y1={getY(0)} x2={width - padding} y2={getY(0)} stroke="rgba(255,255,255,0.1)" strokeDasharray="4 4" />
-          <line x1={padding} y1={getY(50)} x2={width - padding} y2={getY(50)} stroke="rgba(255,255,255,0.1)" strokeDasharray="4 4" />
-          <line x1={padding} y1={getY(100)} x2={width - padding} y2={getY(100)} stroke="rgba(255,255,255,0.1)" strokeDasharray="4 4" />
-
           {/* Area Fill */}
-          <path d={areaD} fill="url(#valorantRedGradient)" />
+          <path d={areaPath} fill="url(#rrGradient)" />
 
-          {/* Smooth Line */}
-          <path d={pathD} fill="none" stroke="#ff4655" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Line Stroke */}
+          <path d={linePath} fill="none" stroke="#38bdf8" strokeWidth="3" strokeLinecap="round" />
 
           {/* Data Points */}
-          {points.map((p, idx) => {
-            const cx = getX(idx);
-            const cy = getY(p.rr);
-            const isHovered = activePoint?.index === idx;
-
-            return (
-              <g key={idx} className="cursor-pointer">
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  r={isHovered ? 7 : 4.5}
-                  fill={p.hasWon ? '#10b981' : '#ff4655'}
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                  onMouseEnter={() => setActivePoint({ ...p, index: idx })}
-                  onMouseLeave={() => setActivePoint(null)}
-                />
-              </g>
-            );
-          })}
+          {coords.map((pt, i) => (
+            <g key={i} className="group cursor-pointer">
+              <circle
+                cx={pt.x}
+                cy={pt.y}
+                r="5"
+                fill="#ff4655"
+                stroke="#ffffff"
+                strokeWidth="2"
+                className="transition-transform group-hover:scale-150"
+              />
+            </g>
+          ))}
         </svg>
+
+        {/* Legend / Timeline Hint */}
+        <div className="flex justify-between items-center text-[10px] font-mono text-gray-400 mt-1">
+          <span>Earliest Logged Game</span>
+          <span>Most Recent Match</span>
+        </div>
       </div>
     </GlassSurface>
   );

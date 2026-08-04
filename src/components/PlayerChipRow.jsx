@@ -9,7 +9,7 @@ export default function PlayerChipRow() {
   if (!players || players.length === 0) return null;
 
   return (
-    <div className="space-y-2">
+    <div id="roster-section" className="space-y-2">
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-cyan-400" />
@@ -22,7 +22,7 @@ export default function PlayerChipRow() {
         </span>
       </div>
 
-      {/* Horizontally scrollable row with scroll snap and fade edge gradients */}
+      {/* Horizontally scrollable row with scroll snap and touch padding */}
       <div className="relative">
         <div className="flex items-center gap-3 overflow-x-auto no-scrollbar snap-x py-1 px-1">
           {players.map((player) => (

@@ -6,7 +6,6 @@ import AgentMasteryGrid from './AgentMasteryGrid';
 import MapPerformanceGrid from './MapPerformanceGrid';
 import RecentMatchesList from './RecentMatchesList';
 import RoleDistributionChart from './RoleDistributionChart';
-import GlassSurface from '../GlassSurface';
 
 import {
   getPlayerMatches,
@@ -69,7 +68,7 @@ export default function PlayerProfilePage({ player, onClose }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/75 backdrop-blur-xl z-0"
+          className="absolute inset-0 bg-black/80 backdrop-blur-xl z-0"
         />
 
         {/* Main High-Tech Profile Screen Modal Container */}
@@ -82,26 +81,26 @@ export default function PlayerProfilePage({ player, onClose }) {
           dragConstraints={{ top: 0, bottom: 0 }}
           dragElastic={0.2}
           onDragEnd={(_, info) => {
-            if (info.offset.y > 120) onClose();
+            if (info.offset.y > 100) onClose();
           }}
-          className="relative z-10 w-full max-w-5xl h-full sm:h-[90vh] bg-[#0a0b0f]/90 border border-white/20 rounded-none sm:rounded-[36px] shadow-2xl flex flex-col overflow-hidden backdrop-blur-3xl"
+          className="relative z-10 w-full max-w-5xl h-[100dvh] sm:h-[90vh] bg-[#0a0b0f]/90 border-0 sm:border border-white/20 rounded-none sm:rounded-[36px] shadow-2xl flex flex-col overflow-hidden backdrop-blur-3xl"
         >
           {/* Mobile Top Drag Handle Bar */}
-          <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-1 shrink-0 sm:hidden" />
+          <div className="w-12 h-1.5 bg-white/30 rounded-full mx-auto mt-3 mb-1 shrink-0 sm:hidden" />
 
-          {/* Top Bar Floating Circular Close Button */}
-          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30">
+          {/* Floating Circular Close Button (44x44px Touch Target) */}
+          <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-30">
             <button
               type="button"
               onClick={onClose}
-              className="w-11 h-11 rounded-full bg-black/60 border border-white/25 text-white hover:bg-white/20 transition-all flex items-center justify-center backdrop-blur-md cursor-pointer shadow-lg active:scale-95"
+              className="w-11 h-11 rounded-full bg-black/70 border border-white/25 text-white hover:bg-white/20 transition-all flex items-center justify-center backdrop-blur-md cursor-pointer shadow-lg active:scale-95 min-h-[44px] min-w-[44px]"
             >
               <X className="w-5 h-5 text-white" />
             </button>
           </div>
 
           {/* Scrollable Dossier Content Area */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 scrollbar-thin scrollbar-thumb-white/20">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-5 sm:space-y-6 pb-20 sm:pb-8 scrollbar-thin scrollbar-thumb-white/20">
             
             {/* 1. Profile Header Hero Panel */}
             <ProfileHeader player={player} vitalStats={vitalStats} />

@@ -20,12 +20,13 @@ export default function AgentMasteryGrid({ agentsList = [] }) {
             AGENT MASTERY & MAIN AGENT POOL ({agentsList.length} AGENTS PLAYED)
           </h3>
         </div>
-        <span className="text-xs font-mono text-gray-400">
+        <span className="text-xs font-mono text-gray-400 hidden sm:inline">
           Tap card for per-map stats
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Grid: 2 columns minimum on mobile (never 1 full width card) */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {agentsList.map((agentData) => (
           <AgentMasteryCard key={agentData.agent} agentData={agentData} />
         ))}

@@ -1,117 +1,159 @@
 import React from 'react';
 import GlassSurface from '../GlassSurface';
-import { Trophy, Swords, Crosshair, TrendingUp, Shield, Sparkles } from 'lucide-react';
+import { Shield, Sparkles, Swords, Trophy, Target, Crosshair } from 'lucide-react';
 
 export default function ProfileHeader({ player, vitalStats }) {
   if (!player) return null;
 
-  const cardArt = player.cardWide || player.cardSmall || 'https://media.valorant-api.com/playercards/e9dcc215-4b83-90e4-ba3b-4f8d32568eb6/wideart.png';
-  const rank = player.rank || {};
-  const tierName = rank.currentTierName || 'Platinum 1';
-  const rankImage = rank.rankImage || 'https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/18/largeicon.png';
+  const {
+    name = 'Agent',
+    tag = 'AP',
+    accountLevel = 1,
+    cardSmall,
+    rank = {},
+  } = player;
 
-  const { winRate, avgACS, avgKD, avgHeadshot, totalGames } = vitalStats;
+  const {
+    current_tier_patched = 'Unranked',
+    ranking_in_tier = 0,
+    images = {},
+  } = rank;
+
+  const {
+    winRate = 0,
+    avgACS = 0,
+    avgKD = '0.00',
+    avgHS = 0,
+    wins = 0,
+    losses = 0,
+  } = vitalStats || {};
 
   return (
-    <GlassSurface level="2" className="relative overflow-hidden p-6 sm:p-8 shadow-2xl !rounded-[32px] border border-white/20">
-      
-      {/* Background Player Card Art with Dark Refractive Gradient Overlay */}
-      <div className="absolute inset-0 z-0 opacity-25 overflow-hidden">
-        <img src={cardArt} alt="Card Art" className="w-full h-full object-cover filter blur-[2px] scale-105" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0b0f] via-[#0a0b0f]/80 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0b0f] via-transparent to-[#0a0b0f]/40" />
-      </div>
+    <GlassSurface level="3" useDistortion className="p-4 sm:p-8 relative overflow-hidden">
+      {/* Background Player Card Splash Image with Blur */}
+      {cardSmall && (
+        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+          <img src={cardSmall} alt={name} className="w-full h-full object-cover filter blur-md scale-110" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0b0f] via-transparent to-transparent" />
+        </div>
+      )}
 
-      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="relative z-10 space-y-6">
         
-        {/* Left Side: Avatar, Name, Rank & Level */}
-        <div className="flex items-center gap-5">
-          {/* Avatar Icon */}
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-black/60 border-2 border-white/30 p-1 overflow-hidden shrink-0 shadow-2xl relative">
-            <img src={player.cardSmall || cardArt} alt={player.name} className="w-full h-full object-cover rounded-xl" />
-            <div className="absolute top-1 right-1 bg-black/80 backdrop-blur-md px-1.5 py-0.5 rounded-full text-[9px] font-mono text-cyan-300 font-bold border border-cyan-400/40">
-              Lvl {player.accountLevel || 100}
+        {/* Top Row: Avatar, Riot ID, Rank Badge */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            
+            {/* Player Card Avatar Container */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-black/60 border-2 border-[#ff4655] p-1 overflow-hidden shrink-0 shadow-glow-red">
+              {cardSmall ? (
+                <img src={cardSmall} alt={name} className="w-full h-full object-cover rounded-xl" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center font-teko text-2xl text-white font-bold">
+                  {name[0]}
+                </div>
+              )}
+            </div>
+
+            {/* Name, Tag, Level */}
+            <div className="truncate max-w-[180px] sm:max-w-none">
+              <div className="flex items-center gap-2">
+                <h2 className="font-teko-title text-3xl sm:text-5xl text-white font-bold tracking-wider leading-none truncate">
+                  {name}
+                </h2>
+                <span className="text-sm sm:text-base font-mono text-gray-400 font-bold shrink-0">
+                  #{tag}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 mt-1.5 font-mono text-xs text-cyan-300">
+                <span className="bg-white/10 px-2 py-0.5 rounded-full border border-white/20">
+                  Level {accountLevel}
+                </span>
+                <span>•</span>
+                <span className="text-gray-300">AP Server</span>
+              </div>
             </div>
           </div>
 
-          {/* Player Name & Rank Info */}
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-teko-title text-4xl sm:text-5xl text-white font-bold tracking-wide leading-none text-glass-shadow">
-                {player.name}
-              </h1>
-              <span className="font-mono text-lg text-gray-300 font-normal">#{player.tag}</span>
+          {/* Competitive Rank Badge */}
+          <div className="flex items-center gap-3 bg-black/50 border border-white/20 rounded-2xl p-3 sm:p-4 shrink-0 shadow-lg">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shrink-0">
+              {images.small ? (
+                <img src={images.small} alt={current_tier_patched} className="w-full h-full object-contain filter drop-shadow-md" />
+              ) : (
+                <Shield className="w-8 h-8 text-cyan-400" />
+              )}
             </div>
-
-            <div className="flex flex-wrap items-center gap-3 mt-2">
-              {/* Rank Badge */}
-              <div className="flex items-center gap-2 bg-black/50 border border-white/20 px-3 py-1.5 rounded-2xl backdrop-blur-md">
-                <img src={rankImage} alt={tierName} className="w-6 h-6 object-contain" />
-                <div className="font-mono text-xs">
-                  <span className="text-white font-bold uppercase">{tierName}</span>
-                  <span className="text-cyan-300 ml-1.5">({rank.rankingInTier || 50} RR)</span>
-                </div>
+            <div>
+              <div className="font-oswald-header text-sm sm:text-base text-white font-bold leading-none">
+                {current_tier_patched}
               </div>
-
-              {/* Peak Rank Sub-label */}
-              <div className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-xl flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Peak: {tierName} (EP 9)</span>
+              <div className="text-xs font-mono text-cyan-300 mt-1 font-bold">
+                {ranking_in_tier} RR
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Side: 4 Floating Vital Stat Glass Chips */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Vital Stats Glass Chips Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
           
-          {/* Win Rate Chip */}
-          <div className="bg-black/50 border border-white/15 rounded-2xl p-3.5 text-center backdrop-blur-xl hover:border-emerald-500/40 transition-all">
-            <div className="flex items-center justify-center gap-1 text-[10px] font-mono text-gray-300 uppercase">
-              <Trophy className="w-3 h-3 text-emerald-400" />
+          {/* Chip 1: Win Rate */}
+          <GlassSurface level="1" className="p-3 sm:p-4">
+            <div className="flex items-center justify-between text-gray-400 text-[10px] font-mono uppercase">
               <span>WIN RATE</span>
+              <Trophy className="w-3.5 h-3.5 text-emerald-400" />
             </div>
-            <div className="font-teko text-3xl font-bold text-emerald-400 leading-none mt-1">
+            <div className={`font-teko text-2xl sm:text-4xl font-bold mt-1 leading-none ${winRate >= 50 ? 'text-emerald-400' : 'text-red-400'}`}>
               {winRate}%
             </div>
-            <div className="text-[10px] font-mono text-gray-400 mt-0.5">{totalGames} Games</div>
-          </div>
-
-          {/* Avg ACS Chip */}
-          <div className="bg-black/50 border border-white/15 rounded-2xl p-3.5 text-center backdrop-blur-xl hover:border-amber-500/40 transition-all">
-            <div className="flex items-center justify-center gap-1 text-[10px] font-mono text-gray-300 uppercase">
-              <Swords className="w-3 h-3 text-amber-400" />
-              <span>AVG ACS</span>
+            <div className="text-[10px] font-mono text-gray-300 mt-0.5">
+              {wins}W - {losses}L
             </div>
-            <div className="font-teko text-3xl font-bold text-amber-400 leading-none mt-1">
+          </GlassSurface>
+
+          {/* Chip 2: Avg ACS */}
+          <GlassSurface level="1" className="p-3 sm:p-4">
+            <div className="flex items-center justify-between text-gray-400 text-[10px] font-mono uppercase">
+              <span>AVG ACS</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            </div>
+            <div className="font-teko text-2xl sm:text-4xl font-bold text-amber-400 mt-1 leading-none">
               {avgACS}
             </div>
-            <div className="text-[10px] font-mono text-gray-400 mt-0.5">Combat Score</div>
-          </div>
-
-          {/* Avg K/D Chip */}
-          <div className="bg-black/50 border border-white/15 rounded-2xl p-3.5 text-center backdrop-blur-xl hover:border-cyan-500/40 transition-all">
-            <div className="flex items-center justify-center gap-1 text-[10px] font-mono text-gray-300 uppercase">
-              <Shield className="w-3 h-3 text-cyan-400" />
-              <span>K/D RATIO</span>
+            <div className="text-[10px] font-mono text-gray-300 mt-0.5">
+              Score Per Round
             </div>
-            <div className="font-teko text-3xl font-bold text-cyan-400 leading-none mt-1">
+          </GlassSurface>
+
+          {/* Chip 3: K/D Ratio */}
+          <GlassSurface level="1" className="p-3 sm:p-4">
+            <div className="flex items-center justify-between text-gray-400 text-[10px] font-mono uppercase">
+              <span>K/D RATIO</span>
+              <Swords className="w-3.5 h-3.5 text-cyan-400" />
+            </div>
+            <div className="font-teko text-2xl sm:text-4xl font-bold text-cyan-300 mt-1 leading-none">
               {avgKD}
             </div>
-            <div className="text-[10px] font-mono text-gray-400 mt-0.5">Kills per Death</div>
-          </div>
+            <div className="text-[10px] font-mono text-gray-300 mt-0.5">
+              Kills Per Death
+            </div>
+          </GlassSurface>
 
-          {/* Headshot % Chip */}
-          <div className="bg-black/50 border border-white/15 rounded-2xl p-3.5 text-center backdrop-blur-xl hover:border-[#ff4655]/40 transition-all">
-            <div className="flex items-center justify-center gap-1 text-[10px] font-mono text-gray-300 uppercase">
-              <Crosshair className="w-3 h-3 text-[#ff4655]" />
+          {/* Chip 4: Headshot % */}
+          <GlassSurface level="1" className="p-3 sm:p-4">
+            <div className="flex items-center justify-between text-gray-400 text-[10px] font-mono uppercase">
               <span>HEADSHOT %</span>
+              <Crosshair className="w-3.5 h-3.5 text-[#ff4655]" />
             </div>
-            <div className="font-teko text-3xl font-bold text-[#ff4655] leading-none mt-1">
-              {avgHeadshot}%
+            <div className="font-teko text-2xl sm:text-4xl font-bold text-[#ff4655] mt-1 leading-none">
+              {avgHS}%
             </div>
-            <div className="text-[10px] font-mono text-gray-400 mt-0.5">Precision Accuracy</div>
-          </div>
+            <div className="text-[10px] font-mono text-gray-300 mt-0.5">
+              Precision Aim
+            </div>
+          </GlassSurface>
 
         </div>
 
