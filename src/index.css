@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* iOS 26 Liquid Glass Material System */
+  .glass-layer-1 {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px) saturate(180%) brightness(1.1);
+    -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.1);
+    border-radius: 28px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  }
+
+  .glass-layer-2 {
+    background: rgba(255, 255, 255, 0.11);
+    backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
+    -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
+    border-radius: 28px;
+    position: relative;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .glass-layer-3 {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(32px) saturate(190%) brightness(1.2);
+    -webkit-backdrop-filter: blur(32px) saturate(190%) brightness(1.2);
+    border-radius: 28px;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+  }
+
+  /* Specular Light Catching Border */
+  .glass-specular::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, 
+      rgba(255,255,255,0.5) 0%, 
+      rgba(255,255,255,0.1) 40%, 
+      rgba(255,255,255,0.05) 60%, 
+      rgba(255,255,255,0.3) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Primary CTA Glass Red Tint Specular Border */
+  .glass-primary-btn {
+    background: rgba(255, 70, 85, 0.25);
+    backdrop-filter: blur(20px) saturate(180%) brightness(1.1);
+    -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.1);
+    border-radius: 20px;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(255, 70, 85, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  .glass-primary-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, 
+      rgba(255, 150, 160, 0.6) 0%, 
+      rgba(255, 70, 85, 0.3) 50%, 
+      rgba(255, 70, 85, 0.1) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Mandatory Text & Icon Drop Shadows for Legibility over Moving Background */
+  .text-glass-shadow {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+  }
+
+  .font-teko-title {
+    font-family: 'Teko', 'Oswald', sans-serif;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 0.95;
+  }
+
+  .font-oswald-header {
+    font-family: 'Oswald', 'Inter', sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .safe-pb {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0b0f;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 70, 85, 0.8);
+}
